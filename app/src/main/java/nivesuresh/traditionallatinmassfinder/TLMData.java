@@ -13,13 +13,14 @@ public class TLMData {
     private String longitude;
     private String phone;
     private String stateProvince;
+    private String streetAddress;
     private String times;
     private String town;
     private String website;
     private String zipPostalCode;
 
     public TLMData(String affiliation, String churchName, String country, String email, String latitude, String longitude,
-                       String phone, String stateProvince, String times, String town, String website, String zipPostalCode){
+                       String phone, String stateProvince, String streetAddress, String times, String town, String website, String zipPostalCode){
         this.affiliation = affiliation;
         this.churchName = churchName;
         this.country = country;
@@ -28,6 +29,7 @@ public class TLMData {
         this.longitude = longitude;
         this.phone = phone;
         this.stateProvince = stateProvince;
+        this.streetAddress = streetAddress;
         this.times = times;
         this.town = town;
         this.website = website;
@@ -65,6 +67,8 @@ public class TLMData {
     public String getStateProvince() {
         return stateProvince;
     }
+
+    public String getStreetAddress() { return streetAddress; }
 
     public String getTimes() {
         return times;

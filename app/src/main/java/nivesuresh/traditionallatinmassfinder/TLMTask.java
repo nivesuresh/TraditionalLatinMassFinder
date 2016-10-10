@@ -89,18 +89,19 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
             throws JSONException {
 
         final String LIST = "list";
-        final String AFFILIATION = "affiliation";
-        final String CHURCH_NAME = "churchName";
-        final String COUNTRY = "country";
-        final String EMAIL = "email";
-        final String LATITUDE = "latitude";
-        final String LONGITUDE = "longitude";
-        final String PHONE = "phone";
-        final String STATE_PROVINCE = "stateProvince";
-        final String TIMES = "times";
-        final String TOWN = "town";
-        final String WEBSITE = "website";
-        final String ZIP_POSTAL_CODE = "zipPostalCode";
+        final String AFFILIATION = "Affiliation";
+        final String CHURCH_NAME = "ChurchName";
+        final String COUNTRY = "Country";
+        final String EMAIL = "Email";
+        final String LATITUDE = "Latitude";
+        final String LONGITUDE = "Longitude";
+        final String PHONE = "Phone";
+        final String STATE_PROVINCE = "StateProvince";
+        final String STREET_ADDRESS = "StreetAddress";
+        final String TIMES = "Times";
+        final String TOWN = "Town";
+        final String WEBSITE = "Website";
+        final String ZIP_POSTAL_CODE = "ZipPostalCode";
 
         JSONArray tlmJsonArray = new JSONArray(tlmJsonStr);
         List<TLMData> resultData = new ArrayList<>();
@@ -115,13 +116,14 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
             String longitude = tlmJsonObject.getString(LONGITUDE);
             String phone = tlmJsonObject.getString(PHONE);
             String stateProvince = tlmJsonObject.getString(STATE_PROVINCE);
+            String streetAddress = tlmJsonObject.getString(STREET_ADDRESS);
             String times = tlmJsonObject.getString(TIMES);
             String town = tlmJsonObject.getString(TOWN);
             String website = tlmJsonObject.getString(WEBSITE);
             String zipPostalCode = tlmJsonObject.getString(ZIP_POSTAL_CODE);
 
             TLMData tlmData = new TLMData(affiliation, churchName, country, email, latitude, longitude, phone,
-                    stateProvince, times, town, website, zipPostalCode);
+                    stateProvince, streetAddress, times, town, website, zipPostalCode);
 
             resultData.add(i, tlmData);
         }
