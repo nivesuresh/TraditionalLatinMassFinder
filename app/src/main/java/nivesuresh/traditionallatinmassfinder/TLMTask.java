@@ -1,9 +1,14 @@
 package nivesuresh.traditionallatinmassfinder;
 
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.format.Time;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,6 +22,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -24,11 +31,31 @@ import java.util.List;
  */
 public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
 
+    public String zipCode;
+    public Context context;
+
+    AsyncListener listener;
+
+    public TLMTask(Context context, AsyncListener listener) {
+        if(listener == null) throw new NullPointerException("Listener can't be null");
+        this.setListener(listener);
+        this.context = context;
+    }
+
+    public interface AsyncListener {
+        public void onComplete(List<TLMData> tlmData);
+    }
+
+    public void setListener(AsyncListener listener) {
+        this.listener = listener;
+    }
+
     @Override
     protected List<TLMData> doInBackground(String... params) {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
+        zipCode = params[0];
 
         String tlmJsonStr;
         List<TLMData> results = new ArrayList<>();
@@ -59,11 +86,9 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
             }
             tlmJsonStr = buffer.toString();
 
-            Log.d("NIVE_SURESH", tlmJsonStr);
-
-            if (!tlmJsonStr.contains("Error"))
+            if (!tlmJsonStr.contains("Error")) {
                 results = getTLMDataFromJson(tlmJsonStr);
-            else results = null;
+            } else results = null;
 
         } catch (Exception e) {
             Log.e("TLMTask", "Error ", e);
@@ -83,6 +108,12 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
         }
 
         return results;
+    }
+
+    @Override
+    protected void onPostExecute(List<TLMData> tlmData) {
+        List<TLMData> sortedTlmData = getClosest30(tlmData);
+        listener.onComplete(sortedTlmData);
     }
 
     public List<TLMData> getTLMDataFromJson(String tlmJsonStr)
@@ -130,4 +161,74 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
 
         return resultData;
     }
+
+    public List<TLMData> getClosest30(List<TLMData> totalTlmData) {
+        List<TLMData> distanceInTlmData = calculateDistance((ArrayList<TLMData>)totalTlmData);
+        List<TLMData> newTotalTlmData = sortLocations((ArrayList<TLMData>)distanceInTlmData);
+        List<TLMData> closest30 = new ArrayList<>();
+
+        for(int i = 0; i < 30; i++) {
+            closest30.add(newTotalTlmData.get(i));
+        }
+        return closest30;
+    }
+
+    private List<TLMData> calculateDistance(ArrayList<TLMData> tlmDataList) {
+        final ArrayList<Double> myLatLng = getLatLngFromZip(context);
+
+        Location currLocation = new Location("Curr Zip");
+        currLocation.setLatitude(myLatLng.get(0));
+        currLocation.setLongitude(myLatLng.get(1));
+
+        for(TLMData data : tlmDataList) {
+            Location tempLocation = new Location("Location");
+            tempLocation.setLatitude(Double.parseDouble(data.getLatitude()));
+            tempLocation.setLongitude(Double.parseDouble(data.getLongitude()));
+
+            Float distance = currLocation.distanceTo(tempLocation);
+
+            double inches = (39.370078 * distance);
+            double miles = (double) (inches / 63360);
+
+            data.setDistance(miles);
+        }
+
+        return tlmDataList;
+    }
+
+    private ArrayList<Double> getLatLngFromZip(Context context) {
+        final Geocoder geocoder = new Geocoder(context);
+        double latitude = 0, longitude = 0;
+        try {
+            List<Address> addresses = geocoder.getFromLocationName(zipCode, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                // Use the address as needed
+                latitude = address.getLatitude();
+                longitude = address.getLongitude();
+            }
+        } catch (IOException e) {
+            Toast.makeText(context, "Unable to geocode zipcode", Toast.LENGTH_LONG).show();
+        } catch (IllegalArgumentException e) {
+        }
+
+        ArrayList<Double> latLong = new ArrayList<Double>();
+        latLong.add(latitude);
+        latLong.add(longitude);
+
+        return latLong;
+    }
+
+    public List<TLMData> sortLocations(ArrayList<TLMData> totalTlmData) {
+        Comparator comp = new Comparator<TLMData>() {
+            @Override
+            public int compare(TLMData o, TLMData o2) {
+                return (int)(o.getDistance() - o2.getDistance());
+            }
+        };
+
+        Collections.sort(totalTlmData, comp);
+        return totalTlmData;
+    }
+
 }

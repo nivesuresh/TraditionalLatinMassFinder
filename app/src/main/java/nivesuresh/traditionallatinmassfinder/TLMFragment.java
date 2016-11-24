@@ -4,37 +4,39 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by nivesuresh on 7/17/16.
  */
-public class TLMFragment extends Fragment {
+public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
 
     private ListView listview;
     private TextView emptyTextView;
     private TextView locationTextView;
 
     private TLMAdapter adapter;
-    private List<TLMData> tlmDataList = new ArrayList<>();
+    public static List<TLMData> tlmDataList = new ArrayList<>();
 
-    private static String zipCode;
+    private static String location;
+
+    public static final String LOCATION = "location";
+    public static final String TLM_DATA_LIST = "tlmDataList";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,13 +54,19 @@ public class TLMFragment extends Fragment {
         emptyTextView = (TextView) rootView.findViewById(R.id.empty_tv);
         locationTextView = (TextView) rootView.findViewById(R.id.location_tv);
 
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        location = sharedPref.getString(LOCATION, "61704");
+
+        listview.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
         return rootView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        populateListView();
+        executeTLMTask();
+        //populateListView(tlmDataList);
     }
 
     @Override
@@ -81,7 +89,8 @@ public class TLMFragment extends Fragment {
     @Override
     public void onResume(){
         super.onResume();
-        populateListView();
+        executeTLMTask();
+        //populateListView(tlmDataList);
     }
 
     /**
@@ -90,22 +99,18 @@ public class TLMFragment extends Fragment {
      */
     private void searchListener(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Enter Zipcode");
+        builder.setTitle("Enter Location (Zipcode or Place)");
 
         final EditText input = new EditText(getActivity());
-        InputFilter[] filters = new InputFilter[1];
-        filters[0] = new InputFilter.LengthFilter(5);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        input.setFilters(filters);
-
         builder.setView(input);
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                zipCode = input.getText().toString();
+                location = input.getText().toString();
                 tlmDataList.clear();
-                populateListView();
+                executeTLMTask();
+                //populateListView();
             }
         });
 
@@ -123,19 +128,19 @@ public class TLMFragment extends Fragment {
      * A helper function to populate the listview with data
      * from the Asynctask (based on the zip code)
      */
-    private void populateListView(){
+    private void executeTLMTask(){
 
         if (tlmDataList.isEmpty()) {
             try {
-                List<TLMData> results = new TLMTask().execute(zipCode).get();
-                if(results != null) tlmDataList.addAll(results);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
+                new TLMTask(getActivity().getApplicationContext(), this).execute(location);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
 
+    private void populateListView(List<TLMData> tlmData) {
+        tlmDataList = tlmData;
         if(tlmDataList.isEmpty()){
             emptyTextView.setVisibility(View.VISIBLE);
             locationTextView.setVisibility(View.GONE);
@@ -145,11 +150,39 @@ public class TLMFragment extends Fragment {
         }
 
         if(tlmDataList != null && !tlmDataList.isEmpty()) {
-
             adapter = new TLMAdapter(getActivity(), tlmDataList);
+
+            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    TLMData data = (TLMData) listview.getItemAtPosition(position);
+                    Intent intent = new Intent(getActivity(), TLMDetailActivity.class);
+                    intent.putExtra(TLM_DATA_LIST, data);
+                    intent.putExtra(LOCATION, location);
+                    startActivity(intent);
+                }
+            });
 
             listview.setAdapter(adapter);
             adapter.notifyDataSetChanged();
         }
     }
+
+    @Override
+    public void onComplete(List<TLMData> tlmData) {
+        populateListView(tlmData);
+    }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+
+        SharedPreferences pref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString(LOCATION, location);
+        editor.commit();
+    }
+
+
 }

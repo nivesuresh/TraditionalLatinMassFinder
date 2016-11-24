@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?><!--undo if it doesn't work-->
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="10dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/churchNameDetailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:textSize="17dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/addressTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Address:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/addressDetailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:gravity="right"
+                android:textColor="@android:color/holo_red_dark"
+                android:textColorLink="@android:color/holo_red_dark"
+                android:clickable="true"
+                android:autoLink="map"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/hoursTextView"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:text="Times:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/hoursDetailTextView"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:gravity="right"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/phoneTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phone:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/phoneDetailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:textColorLink="@android:color/holo_red_dark"
+                android:clickable="true"
+                android:autoLink="phone"
+                android:gravity="right"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/websiteTextView"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:text="Website:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/websiteDetailTextView"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:textColorLink="@android:color/holo_red_dark"
+                android:clickable="true"
+                android:autoLink="web"
+                android:gravity="right"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/emailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/emailDetailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:textColorLink="@android:color/holo_red_dark"
+                android:clickable="true"
+                android:autoLink="email"
+                android:gravity="right"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/affiliationTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Affiliation:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/affiliationDetailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:gravity="right"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical|center_horizontal"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:id="@+id/distanceTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Distance:"
+                android:paddingLeft="10dp"
+                android:gravity="left"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:id="@+id/distanceDetailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:gravity="right"
+                android:layout_weight="1"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
