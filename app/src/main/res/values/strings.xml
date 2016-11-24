@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Traditional Latin Mass Finder</string>
-    <string name="empty_tv">Click Search and enter a valid US zip code to see the 5-day weather forecast of your favorite city!</string>
 
+    <string name="action_about">About Application</string>
+    <string name="action_news">Latin Mass Finder News</string>
+    <string name="action_search">Search</string>
+    <string name="search_hint">Enter ZipCode Or Place</string>
 </resources>

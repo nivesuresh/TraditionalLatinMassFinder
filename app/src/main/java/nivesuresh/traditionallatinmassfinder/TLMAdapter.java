@@ -8,6 +8,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -76,15 +79,21 @@ public class TLMAdapter extends BaseAdapter {
         viewHolder.churchNameTextView = (TextView) convertView.findViewById(R.id.churchNameTextView);
         viewHolder.churchNameTextView.setText(churchName);
 
+        viewHolder.distanceTextView = (TextView) convertView.findViewById(R.id.distanceTextView);
+        String distance = new DecimalFormat("##.##").format(data.getDistance());
+        viewHolder.distanceTextView.setText(distance + " miles");
+
         convertView.setTag(viewHolder);
         return convertView;
     }
 
     public static class ViewHolder{
         TextView churchNameTextView;
+        TextView distanceTextView;
 
         public TextView getChurchNameTextView() {
             return churchNameTextView;
         }
+        public TextView getDistanceTextView() { return distanceTextView; }
     }
 }

@@ -29,9 +29,6 @@ public class TLMDetailFragment extends Fragment {
 
     TLMData data;
     String location;
-//    String place;
-//    String location;
-//    String units;
 
     TextView churchNameDetailTextView;
     TextView addressDetailTextView;
@@ -41,7 +38,6 @@ public class TLMDetailFragment extends Fragment {
     TextView emailDetailTextView;
     TextView affiliationDetailTextView;
     TextView distanceDetailTextView;
-
 
     View rootView;
 
@@ -85,13 +81,11 @@ public class TLMDetailFragment extends Fragment {
         addressDetailTextView = (TextView) rootView.findViewById(R.id.addressDetailTextView);
         String address = data.getStreetAddress() + "\n" + data.getTown() + ", " + data.getStateProvince() + " " + data.getZipPostalCode()
                 + "\n" + data.getCountry();
-        //addressDetailTextView.setText();
 
         //http://stackoverflow.com/questions/2624649/autolink-for-map-not-working
         SpannableString spanStr = new SpannableString(address);
         spanStr.setSpan(new UnderlineSpan(), 0, spanStr.length(), 0);
         addressDetailTextView.setText(spanStr);
-
 
         addressDetailTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,7 +122,5 @@ public class TLMDetailFragment extends Fragment {
         distanceDetailTextView = (TextView) rootView.findViewById(R.id.distanceDetailTextView);
         String distance = new DecimalFormat("##.##").format(data.getDistance());
         distanceDetailTextView.setText(distance + " miles");
-
-
     }
 }

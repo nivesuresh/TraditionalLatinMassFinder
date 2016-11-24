@@ -2,11 +2,13 @@ package nivesuresh.traditionallatinmassfinder;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -73,13 +75,28 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+        //Implemented searchview with inspiration from: http://javapapers.com/android/android-searchview-action-bar-tutorial/
+//        SearchManager searchManager =
+//                (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+//        SearchView searchView =
+//                (SearchView) menu.findItem(R.id.action_search).getActionView();
+//        searchView.setSearchableInfo(
+//                searchManager.getSearchableInfo(getActivity().getComponentName()));
+
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_search){
+        if(id == R.id.action_about) {
+            Intent intent = new Intent(getActivity(), TLMAboutActivity.class);
+            startActivity(intent);
+        } else if(id == R.id.action_news) {
+            Intent intent = new Intent(getActivity(), TLMNewsActivity.class);
+            startActivity(intent);
+        } else if(id == R.id.action_search){
             searchListener();
         }
 
@@ -89,8 +106,8 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     @Override
     public void onResume(){
         super.onResume();
-        executeTLMTask();
-        //populateListView(tlmDataList);
+//        executeTLMTask();
+        populateListView(tlmDataList);
     }
 
     /**
@@ -142,11 +159,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     private void populateListView(List<TLMData> tlmData) {
         tlmDataList = tlmData;
         if(tlmDataList.isEmpty()){
-            emptyTextView.setVisibility(View.VISIBLE);
-            locationTextView.setVisibility(View.GONE);
-        } else{
-            emptyTextView.setVisibility(View.GONE);
-            locationTextView.setVisibility(View.VISIBLE);
+            //TODO
         }
 
         if(tlmDataList != null && !tlmDataList.isEmpty()) {
