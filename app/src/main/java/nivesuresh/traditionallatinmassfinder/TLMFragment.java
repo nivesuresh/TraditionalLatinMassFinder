@@ -7,8 +7,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,13 +28,15 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by nivesuresh on 7/17/16.
  */
-public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
+public class TLMFragment extends Fragment implements TLMTask.AsyncListener, LocationListener {
 
     private ListView listview;
     private TextView emptyTextView;
@@ -36,6 +46,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     public static List<TLMData> tlmDataList = new ArrayList<>();
 
     private static String location;
+    private LocationManager locationManager;
 
     public static final String LOCATION = "location";
     public static final String TLM_DATA_LIST = "tlmDataList";
@@ -56,7 +67,15 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
         emptyTextView = (TextView) rootView.findViewById(R.id.empty_tv);
         locationTextView = (TextView) rootView.findViewById(R.id.location_tv);
 
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        } catch(SecurityException e) {
+            Log.d("Error", e.getStackTrace().toString());
+        }
+
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         location = sharedPref.getString(LOCATION, "61704");
 
         listview.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -68,21 +87,37 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         executeTLMTask();
-        //populateListView(tlmDataList);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        final MenuItem item = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                location = query;
+                tlmDataList.clear();
+                executeTLMTask();
+                item.collapseActionView();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.i("well", " this worked");
+                return false;
+            }
+        });
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
-        super.onCreateOptionsMenu(menu, inflater);
 
-        //Implemented searchview with inspiration from: http://javapapers.com/android/android-searchview-action-bar-tutorial/
-//        SearchManager searchManager =
-//                (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-//        SearchView searchView =
-//                (SearchView) menu.findItem(R.id.action_search).getActionView();
-//        searchView.setSearchableInfo(
-//                searchManager.getSearchableInfo(getActivity().getComponentName()));
+        super.onCreateOptionsMenu(menu, inflater);
 
     }
 
@@ -90,23 +125,20 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if(id == R.id.action_about) {
+        if (id == R.id.action_about) {
             Intent intent = new Intent(getActivity(), TLMAboutActivity.class);
             startActivity(intent);
-        } else if(id == R.id.action_news) {
+        } else if (id == R.id.action_news) {
             Intent intent = new Intent(getActivity(), TLMNewsActivity.class);
             startActivity(intent);
-        } else if(id == R.id.action_search){
-            searchListener();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
-//        executeTLMTask();
         populateListView(tlmDataList);
     }
 
@@ -114,7 +146,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
      * A helper function for the Alert dialog to pop up when
      * "Search" button on ActionBar is clicked
      */
-    private void searchListener(){
+    private void searchListener() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Enter Location (Zipcode or Place)");
 
@@ -145,7 +177,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
      * A helper function to populate the listview with data
      * from the Asynctask (based on the zip code)
      */
-    private void executeTLMTask(){
+    private void executeTLMTask() {
 
         if (tlmDataList.isEmpty()) {
             try {
@@ -158,11 +190,11 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
 
     private void populateListView(List<TLMData> tlmData) {
         tlmDataList = tlmData;
-        if(tlmDataList.isEmpty()){
-            //TODO
+        if (tlmDataList.isEmpty()) {
+            //TODO: throw up a progress bar
         }
 
-        if(tlmDataList != null && !tlmDataList.isEmpty()) {
+        if (tlmDataList != null && !tlmDataList.isEmpty()) {
             adapter = new TLMAdapter(getActivity(), tlmDataList);
 
             listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -187,10 +219,39 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener {
     }
 
     @Override
-    public void onStop(){
+    public void onLocationChanged(Location location) {
+
+        List<Address> addresses = new ArrayList<>();
+        Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+        } catch(IOException e) {
+            Log.d("Exception", e.getStackTrace().toString());
+        }
+
+        this.location = addresses.get(0).getFeatureName();
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    @Override
+    public void onStop() {
         super.onStop();
 
-        SharedPreferences pref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = pref.edit();
 
         editor.putString(LOCATION, location);

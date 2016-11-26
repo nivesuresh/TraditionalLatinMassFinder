@@ -8,13 +8,11 @@
     <item android:id="@+id/action_news" android:title="@string/action_news"
         android:orderInCategory="101" app:showAsAction="never" />
 
-    <item android:id="@+id/action_search" android:title="@string/action_search"
-        android:orderInCategory="102" app:showAsAction="never" />
-
-    <!--<item
+    <item
         android:id="@+id/action_search"
         android:title="@string/action_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="always"/>-->
+        android:icon="@mipmap/ic_search"
+        app:showAsAction="collapseActionView|always"/>
 
 </menu>
