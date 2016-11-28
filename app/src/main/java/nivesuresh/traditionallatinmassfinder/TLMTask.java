@@ -1,5 +1,6 @@
 package nivesuresh.traditionallatinmassfinder;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
@@ -35,9 +36,10 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
     public Context context;
 
     AsyncListener listener;
+    private ProgressDialog progressDialog;
 
     public TLMTask(Context context, AsyncListener listener) {
-        if(listener == null) throw new NullPointerException("Listener can't be null");
+        if (listener == null) throw new NullPointerException("Listener can't be null");
         this.setListener(listener);
         this.context = context;
     }
@@ -94,7 +96,7 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
             Log.e("TLMTask", "Error ", e);
             return null;
 
-        } finally{
+        } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -137,7 +139,7 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
         JSONArray tlmJsonArray = new JSONArray(tlmJsonStr);
         List<TLMData> resultData = new ArrayList<>();
 
-        for(int i = 0; i < tlmJsonArray.length(); i++) {
+        for (int i = 0; i < tlmJsonArray.length(); i++) {
             JSONObject tlmJsonObject = tlmJsonArray.getJSONObject(i);
             String affiliation = tlmJsonObject.getString(AFFILIATION);
             String churchName = tlmJsonObject.getString(CHURCH_NAME);
@@ -163,13 +165,18 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
     }
 
     public List<TLMData> getClosest30(List<TLMData> totalTlmData) {
-        List<TLMData> distanceInTlmData = calculateDistance((ArrayList<TLMData>)totalTlmData);
-        List<TLMData> newTotalTlmData = sortLocations((ArrayList<TLMData>)distanceInTlmData);
+        List<TLMData> distanceInTlmData, newTotalTlmData;
         List<TLMData> closest30 = new ArrayList<>();
 
-        for(int i = 0; i < 30; i++) {
-            closest30.add(newTotalTlmData.get(i));
+        if (totalTlmData != null) {
+            distanceInTlmData = calculateDistance((ArrayList<TLMData>) totalTlmData);
+            newTotalTlmData = sortLocations((ArrayList<TLMData>) distanceInTlmData);
+
+            for (int i = 0; i < 30; i++) {
+                closest30.add(newTotalTlmData.get(i));
+            }
         }
+
         return closest30;
     }
 
@@ -180,7 +187,7 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
         currLocation.setLatitude(myLatLng.get(0));
         currLocation.setLongitude(myLatLng.get(1));
 
-        for(TLMData data : tlmDataList) {
+        for (TLMData data : tlmDataList) {
             Location tempLocation = new Location("Location");
             tempLocation.setLatitude(Double.parseDouble(data.getLatitude()));
             tempLocation.setLongitude(Double.parseDouble(data.getLongitude()));
@@ -192,6 +199,7 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
 
             data.setDistance(miles);
         }
+
 
         return tlmDataList;
     }
@@ -223,7 +231,7 @@ public class TLMTask extends AsyncTask<String, Void, List<TLMData>> {
         Comparator comp = new Comparator<TLMData>() {
             @Override
             public int compare(TLMData o, TLMData o2) {
-                return (int)(o.getDistance() - o2.getDistance());
+                return (int) (o.getDistance() - o2.getDistance());
             }
         };
 

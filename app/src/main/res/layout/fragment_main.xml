@@ -33,6 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20sp"
+        android:text="Please wait while we load churches close to you..."
         android:visibility="gone">
     </TextView>
 
