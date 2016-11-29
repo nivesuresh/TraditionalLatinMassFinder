@@ -12,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -27,6 +28,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -83,6 +89,33 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
         listview = (ListView) rootView.findViewById(R.id.listview);
         emptyTextView = (TextView) rootView.findViewById(R.id.empty_tv);
         locationTextView = (TextView) rootView.findViewById(R.id.location_tv);
+
+        String loading = emptyTextView.getText().toString();
+
+        SpannableString ss = new SpannableString(loading);
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(View textView) {
+                if (getActivity() == null) {
+                    return;
+                }
+                Intent intent = new Intent();
+                intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                intent.setData(uri);
+                TLMFragment.this.startActivity(intent);
+            }
+            @Override
+            public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setUnderlineText(false);
+            }
+        };
+        ss.setSpan(clickableSpan, 17, 37, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        emptyTextView.setText(ss);
+        emptyTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        emptyTextView.setHighlightColor(Color.TRANSPARENT);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 

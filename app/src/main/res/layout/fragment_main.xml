@@ -32,8 +32,9 @@
         android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:text="Please wait while we load churches close to you..."
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:text="After turning on Location Permissions OR searching on Address, the closest Masses will load"
         android:visibility="gone">
     </TextView>
 
