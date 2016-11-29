@@ -121,7 +121,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
 
             if (ContextCompat.checkSelfPermission(getActivity(), TLMActivity.LOCATION_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), TLMActivity.LOCATION_PERMISSION)) {
-                    showExplanation("Location Permission Required!", "To view a list of churches near you, please turn on location permissions in settings. Otherwise, enter a zip code.", new String[]{TLMActivity.LOCATION_PERMISSION}, TLMActivity.REQUEST_PERMISSION);
+                    showExplanation("Location Permission Required!", "To view a list of churches near you, please turn on location permissions in settings. Otherwise, enter a location.", new String[]{TLMActivity.LOCATION_PERMISSION}, TLMActivity.REQUEST_PERMISSION);
                 } else {
                     requestPermissions(new String[]{TLMActivity.LOCATION_PERMISSION}, TLMActivity.REQUEST_PERMISSION);
                 }
