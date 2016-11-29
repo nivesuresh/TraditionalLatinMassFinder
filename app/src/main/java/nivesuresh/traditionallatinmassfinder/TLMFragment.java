@@ -1,5 +1,8 @@
 package nivesuresh.traditionallatinmassfinder;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
@@ -8,14 +11,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
@@ -30,6 +39,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.support.design.widget.Snackbar;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +54,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
     private ListView listview;
     private TextView emptyTextView;
     private TextView locationTextView;
-//    private ProgressBar progressBar;
+    //    private ProgressBar progressBar;
     private ProgressDialog progressDialog;
 
     private TLMAdapter adapter;
@@ -74,17 +84,18 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
         emptyTextView = (TextView) rootView.findViewById(R.id.empty_tv);
         locationTextView = (TextView) rootView.findViewById(R.id.location_tv);
 
-        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-        //Adapted from: http://bangalorebanerjee.blogspot.com/2014/02/android-location-and-navigate.html
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, true);
-
-        try {
-            Location devicelocation = locationManager.getLastKnownLocation(provider);
-            convertLatLongToLocation(devicelocation);
-        } catch(SecurityException e) {
-            Log.d("Security Exception", e.getStackTrace().toString());
+            if (ContextCompat.checkSelfPermission(getActivity(), TLMActivity.LOCATION_PERMISSION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), TLMActivity.LOCATION_PERMISSION)) {
+                    showExplanation("Location Permission Required!", "To view a list of churches near you, please turn on location permissions in settings. Otherwise, enter a zip code.", new String[]{TLMActivity.LOCATION_PERMISSION}, TLMActivity.REQUEST_PERMISSION);
+                } else {
+                    requestPermissions(new String[]{TLMActivity.LOCATION_PERMISSION}, TLMActivity.REQUEST_PERMISSION);
+                }
+            } else {
+                getCurrentLocation();
+                executeTLMTask();
+            }
         }
 
         listview.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -95,7 +106,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        executeTLMTask();
+
     }
 
     @Override
@@ -148,10 +159,10 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
     public void onResume() {
         super.onResume();
 
-        if (provider != null){
+        if (provider != null) {
             try {
                 locationManager.requestLocationUpdates(provider, 400, 1, this);
-            } catch(SecurityException e) {
+            } catch (SecurityException e) {
                 Log.d("Security Exception", e.getStackTrace().toString());
             }
         }
@@ -176,9 +187,9 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
 
     private void populateListView(List<TLMData> tlmData) {
         tlmDataList = tlmData;
-        if(tlmDataList.isEmpty()){
+        if (tlmDataList.isEmpty()) {
             emptyTextView.setVisibility(View.VISIBLE);
-        } else{
+        } else {
             emptyTextView.setVisibility(View.GONE);
         }
 
@@ -211,7 +222,7 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
         Geocoder geocoder = new Geocoder(getActivity(), Locale.getDefault());
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-        } catch(IOException e) {
+        } catch (IOException e) {
             Log.d("Exception", e.getStackTrace().toString());
         }
 
@@ -236,6 +247,65 @@ public class TLMFragment extends Fragment implements TLMTask.AsyncListener, Loca
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.M)
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        if (requestCode == TLMActivity.REQUEST_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+                executeTLMTask();
+            } else {
+                Snackbar snackbar = Snackbar.make(getView(), "Turn on Location Permission", Snackbar.LENGTH_LONG);
+                snackbar.setAction("Settings", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (getActivity() == null) {
+                            return;
+                        }
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getActivity().getPackageName(), null);
+                        intent.setData(uri);
+                        TLMFragment.this.startActivity(intent);
+                    }
+                });
+                snackbar.show();
+            }
+        }
+    }
+
+    private void getCurrentLocation() {
+        locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+
+        //Adapted from: http://bangalorebanerjee.blogspot.com/2014/02/android-location-and-navigate.html
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, true);
+
+        try {
+            Location devicelocation = locationManager.getLastKnownLocation(provider);
+            convertLatLongToLocation(devicelocation);
+        } catch (SecurityException e) {
+            Log.d("Security Exception", e.getStackTrace().toString());
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void showExplanation(String title,
+                                 String message,
+                                 final String[] permission,
+                                 final int permissionRequestCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        requestPermissions(permission, permissionRequestCode);
+                    }
+                });
+        builder.create().show();
     }
 
     @Override
